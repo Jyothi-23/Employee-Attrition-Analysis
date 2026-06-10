@@ -22,44 +22,36 @@ print("Connected Successfully!")
 query = "SELECT * FROM employee_attrition"
 
 df = pd.read_sql(query, conn)
-print(df.columns.tolist())
 
 # Clean column names
 df.columns = df.columns.str.strip()
 
-print("\nColumns Available:")
+print("\nAvailable Columns:")
 print(df.columns.tolist())
+
+# ==========================================
+# DATA OVERVIEW
+# ==========================================
 
 print("\nFirst 5 Rows:")
 print(df.head())
 
-# ==========================================
-# DATASET INFORMATION
-# ==========================================
-
-print("\nDataset Shape:")
+print("\nShape:")
 print(df.shape)
 
-print("\nDataset Info:")
+print("\nInfo:")
 print(df.info())
-
-print("\nSummary Statistics:")
-print(df.describe())
-
-# ==========================================
-# DATA CLEANING
-# ==========================================
 
 print("\nMissing Values:")
 print(df.isnull().sum())
 
-print("\nDuplicate Records:")
+print("\nDuplicates:")
 print(df.duplicated().sum())
 
 df = df.drop_duplicates()
 
 # ==========================================
-# KPI CALCULATIONS
+# KPI SUMMARY
 # ==========================================
 
 total_employees = len(df)
@@ -69,7 +61,7 @@ employees_left = len(
 )
 
 attrition_rate = round(
-    (employees_left / total_employees) * 100,
+    employees_left / total_employees * 100,
     2
 )
 
@@ -83,14 +75,12 @@ avg_years = round(
     2
 )
 
-print("\n==============================")
-print("KPI SUMMARY")
-print("==============================")
+print("\n========== KPI SUMMARY ==========")
 print("Total Employees :", total_employees)
 print("Employees Left  :", employees_left)
 print("Attrition Rate  :", attrition_rate, "%")
 print("Average Salary  :", avg_salary)
-print("Average Years at Company :", avg_years)
+print("Average Years At Company :", avg_years)
 
 # ==========================================
 # DEPARTMENT ATTRITION
@@ -98,11 +88,11 @@ print("Average Years at Company :", avg_years)
 
 dept_attrition = (
     df.groupby('Department')['Attrition']
-    .apply(lambda x: (x == 'Yes').sum())
-    .sort_values(ascending=False)
+      .apply(lambda x: (x == 'Yes').sum())
+      .sort_values(ascending=False)
 )
 
-print("\nDepartment-wise Attrition:")
+print("\nDepartment Attrition")
 print(dept_attrition)
 
 # ==========================================
@@ -111,11 +101,11 @@ print(dept_attrition)
 
 job_attrition = (
     df.groupby('JobRole')['Attrition']
-    .apply(lambda x: (x == 'Yes').sum())
-    .sort_values(ascending=False)
+      .apply(lambda x: (x == 'Yes').sum())
+      .sort_values(ascending=False)
 )
 
-print("\nJob Role Attrition:")
+print("\nJob Role Attrition")
 print(job_attrition)
 
 # ==========================================
@@ -127,7 +117,7 @@ gender_attrition = pd.crosstab(
     df['Attrition']
 )
 
-print("\nGender Attrition:")
+print("\nGender Attrition")
 print(gender_attrition)
 
 # ==========================================
@@ -139,47 +129,41 @@ overtime_attrition = pd.crosstab(
     df['Attrition']
 )
 
-print("\nOvertime Attrition:")
+print("\nOvertime Attrition")
 print(overtime_attrition)
 
 # ==========================================
-# AGE GROUP ANALYSIS
+# AGE GROUP ATTRITION
 # ==========================================
 
-if 'Age' in df.columns:
+df['AgeGroup'] = pd.cut(
+    df['Age'],
+    bins=[18, 25, 35, 45, 55, 65],
+    labels=[
+        '18-25',
+        '26-35',
+        '36-45',
+        '46-55',
+        '56-65'
+    ]
+)
 
-    df['AgeGroup'] = pd.cut(
-        df['Age'],
-        bins=[18,25,35,45,55,65],
-        labels=['18-25','26-35','36-45','46-55','56-65']
-    )
+age_attrition = pd.crosstab(
+    df['AgeGroup'],
+    df['Attrition']
+)
 
-    age_attrition = pd.crosstab(
-        df['AgeGroup'],
-        df['Attrition']
-    )
-
-    print(age_attrition)
-
-    age_attrition.plot(kind='bar')
-    plt.title('Age Group Attrition')
-    plt.show()
-
-else:
-    print("Age column not found in database table.")
+print("\nAge Group Attrition")
+print(age_attrition)
 
 # ==========================================
-# SALARY GROUP ANALYSIS
+# SALARY GROUP ATTRITION
 # ==========================================
 
 df['SalaryGroup'] = pd.cut(
     df['MonthlyIncome'],
     bins=[0, 5000, 10000, 20000],
-    labels=[
-        'Low',
-        'Medium',
-        'High'
-    ]
+    labels=['Low', 'Medium', 'High']
 )
 
 salary_group_attrition = pd.crosstab(
@@ -187,44 +171,38 @@ salary_group_attrition = pd.crosstab(
     df['Attrition']
 )
 
-print("\nSalary Group Attrition:")
+print("\nSalary Group Attrition")
 print(salary_group_attrition)
 
 # ==========================================
 # VISUALIZATION 1
-# Department Attrition
+# DEPARTMENT ATTRITION
 # ==========================================
 
 plt.figure(figsize=(8,5))
-
 dept_attrition.plot(kind='bar')
-
 plt.title('Department Wise Attrition')
 plt.xlabel('Department')
 plt.ylabel('Attrition Count')
-
 plt.tight_layout()
 plt.show()
 
 # ==========================================
 # VISUALIZATION 2
-# Job Role Attrition
+# JOB ROLE ATTRITION
 # ==========================================
 
 plt.figure(figsize=(10,5))
-
 job_attrition.plot(kind='bar')
-
 plt.title('Job Role Attrition')
 plt.xlabel('Job Role')
 plt.ylabel('Attrition Count')
-
 plt.tight_layout()
 plt.show()
 
 # ==========================================
 # VISUALIZATION 3
-# Gender Attrition
+# GENDER ATTRITION
 # ==========================================
 
 gender_attrition.plot(
@@ -235,13 +213,12 @@ gender_attrition.plot(
 plt.title('Gender Wise Attrition')
 plt.xlabel('Gender')
 plt.ylabel('Employee Count')
-
 plt.tight_layout()
 plt.show()
 
 # ==========================================
 # VISUALIZATION 4
-# Overtime Attrition
+# OVERTIME ATTRITION
 # ==========================================
 
 overtime_attrition.plot(
@@ -252,13 +229,12 @@ overtime_attrition.plot(
 plt.title('Overtime vs Attrition')
 plt.xlabel('OverTime')
 plt.ylabel('Employee Count')
-
 plt.tight_layout()
 plt.show()
 
 # ==========================================
 # VISUALIZATION 5
-# Age Group Attrition
+# AGE GROUP ATTRITION
 # ==========================================
 
 age_attrition.plot(
@@ -269,21 +245,16 @@ age_attrition.plot(
 plt.title('Age Group Attrition')
 plt.xlabel('Age Group')
 plt.ylabel('Employee Count')
-
 plt.tight_layout()
 plt.show()
 
 # ==========================================
 # VISUALIZATION 6
-# Salary Distribution
+# SALARY DISTRIBUTION
 # ==========================================
 
 plt.figure(figsize=(8,5))
-
-plt.hist(
-    df['MonthlyIncome'],
-    bins=20
-)
+plt.hist(df['MonthlyIncome'], bins=20)
 
 plt.title('Salary Distribution')
 plt.xlabel('Monthly Income')
@@ -294,7 +265,7 @@ plt.show()
 
 # ==========================================
 # VISUALIZATION 7
-# Salary Group Attrition
+# SALARY GROUP ATTRITION
 # ==========================================
 
 salary_group_attrition.plot(
@@ -310,15 +281,15 @@ plt.tight_layout()
 plt.show()
 
 # ==========================================
-# EXPORT DATA
+# EXPORT RESULTS
 # ==========================================
 
 df.to_csv(
-    "employee_attrition_analysis.csv",
+    'employee_attrition_analysis.csv',
     index=False
 )
 
-print("\nCSV Exported Successfully!")
+print("\nAnalysis exported successfully!")
 
 # ==========================================
 # CLOSE CONNECTION
@@ -326,4 +297,4 @@ print("\nCSV Exported Successfully!")
 
 conn.close()
 
-print("Database Connection Closed!")
+print("Database connection closed.")
