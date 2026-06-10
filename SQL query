@@ -1,0 +1,20 @@
+#SQL Queries
+
+SELECT COUNT(*) AS TotalEmployees
+FROM employee_attrition;
+
+SELECT COUNT(*) AS EmployeesLeft
+FROM employee_attrition
+WHERE Attrition='Yes';
+
+SELECT Department,
+SUM(CASE WHEN Attrition='Yes'
+THEN 1 ELSE 0 END) AS AttritionCount
+FROM employee_attrition
+GROUP BY Department;
+
+SELECT JobRole,
+SUM(CASE WHEN Attrition='Yes'
+THEN 1 ELSE 0 END) AS AttritionCount
+FROM employee_attrition
+GROUP BY JobRole;
